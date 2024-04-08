@@ -1,25 +1,39 @@
 import { Injectable } from '@nestjs/common';
+import { Collection, QueryOptions, STANDARD } from '@tensingn/firebary';
 import { PlayerModel } from '@tensingn/son-of-botker-models';
+import { PLAYERS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
+import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
+import { CreatePlayerDto } from './dtos/create-player.dto';
+import { UpdatePlayerDto } from './dtos/update-player.dto';
 
 @Injectable()
 export class PlayersService {
-  create(player: PlayerModel) {
-    return 'This action adds a new player';
-  }
+    constructor(
+        @InjectCollectionByCollectionName(PLAYERS_COLLECTION_NAME)
+        private playersCollection: Collection,
+    ) {}
 
-  findAll() {
-    return `This action returns all players`;
-  }
+    create(player: CreatePlayerDto): Promise<PlayerModel> {
+        return this.playersCollection.addSingle(player, true);
+    }
 
-  findOne(id: string) {
-    return `This action returns a #${id} player`;
-  }
+    createMany(players: Array<CreatePlayerDto>): Promise<void> {
+        return this.playersCollection.addMany(players);
+    }
 
-  update(id: string, player: PlayerModel) {
-    return `This action updates a #${id} player`;
-  }
+    findMany(query: QueryOptions = STANDARD): Promise<Array<PlayerModel>> {
+        return this.playersCollection.getCollection(query);
+    }
 
-  remove(id: string) {
-    return `This action removes a #${id} player`;
-  }
+    findOne(id: string): Promise<PlayerModel> {
+        return this.playersCollection.getSingle(id);
+    }
+
+    update(id: string, player: UpdatePlayerDto): Promise<Object> {
+        return this.playersCollection.updateSingle(id, player);
+    }
+
+    remove(id: string): void {
+        this.playersCollection.deleteSingle(id);
+    }
 }

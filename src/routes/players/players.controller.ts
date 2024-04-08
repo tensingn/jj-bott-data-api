@@ -1,41 +1,64 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    Query,
 } from '@nestjs/common';
 import { PlayersService } from './players.service';
 import { PlayerModel } from '@tensingn/son-of-botker-models';
+import { CreatePlayerDto } from './dtos/create-player.dto';
+import { UpdatePlayerDto } from './dtos/update-player.dto';
+import { STANDARD } from '@tensingn/firebary';
+import { BulkCreatePlayersDto } from './dtos/bulk-create-players.dto';
 
 @Controller('players')
 export class PlayersController {
-  constructor(private readonly playersService: PlayersService) {}
+    constructor(private readonly playersService: PlayersService) {}
 
-  @Post()
-  create(@Body() player: PlayerModel) {
-    return this.playersService.create(player);
-  }
+    @Post()
+    create(@Body() player: CreatePlayerDto): Promise<PlayerModel> {
+        return this.playersService.create(player);
+    }
 
-  @Get()
-  findAll() {
-    return this.playersService.findAll();
-  }
+    @Post('bulkCreate')
+    bulkCreate(@Body() body: BulkCreatePlayersDto): Promise<void> {
+        return this.playersService.createMany(body.players);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.playersService.findOne(id);
-  }
+    @Get()
+    findMany(
+        @Query('startAfter') startAfter: string = null,
+        @Query('limit') limit: number = 10,
+    ): Promise<Array<PlayerModel>> {
+        const query = STANDARD;
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() player: PlayerModel) {
-    return this.playersService.update(id, player);
-  }
+        if (startAfter && limit > 0) {
+            query.pagingOptions.startAfter = startAfter;
+            query.pagingOptions.limit = limit;
+        }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.playersService.remove(id);
-  }
+        return this.playersService.findMany(query);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string): Promise<PlayerModel> {
+        return this.playersService.findOne(id);
+    }
+
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() player: UpdatePlayerDto,
+    ): Promise<Object> {
+        return this.playersService.update(id, player);
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string): void {
+        this.playersService.remove(id);
+    }
 }
