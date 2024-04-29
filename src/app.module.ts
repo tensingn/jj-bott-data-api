@@ -12,7 +12,6 @@ import { NFLTeamsModule } from './routes/nfl-teams/nfl-teams.module';
         NFLTeamsModule,
         FirebaryModule.forRoot({
             projectId: process.env.GCP_PROJECTID,
-            keyFilename: process.env.GCP_KEYFILENAME,
             ignoreUndefinedProperties: true,
         }),
     ],

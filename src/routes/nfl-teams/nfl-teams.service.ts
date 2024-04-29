@@ -13,12 +13,26 @@ export class NFLTeamsService {
         private nflTeamsCollection: Collection,
     ) {}
 
-    create(nflTeam: CreateNFLTeamDto): Promise<NFLTeamModel> {
+    async create(nflTeam: CreateNFLTeamDto): Promise<NFLTeamModel> {
         return this.nflTeamsCollection.addSingle(nflTeam, true);
     }
 
     bulkCreate(nflTeams: Array<CreateNFLTeamDto>): Promise<void> {
         return this.nflTeamsCollection.addMany(nflTeams);
+    }
+
+    async bulkUpdate(nflTeams: Array<UpdateNFLTeamDto>): Promise<void> {
+        const nflTeamsToUpdateWithIds: Array<{
+            id: string;
+            data: UpdateNFLTeamDto;
+        }> = nflTeams.map((nflTeam) => {
+            return {
+                id: nflTeam.id,
+                data: nflTeam,
+            };
+        });
+
+        await this.nflTeamsCollection.updateMany(nflTeamsToUpdateWithIds);
     }
 
     findMany(query: QueryOptions = STANDARD): Promise<Array<NFLTeamModel>> {
@@ -33,7 +47,7 @@ export class NFLTeamsService {
         return this.nflTeamsCollection.updateSingle(id, nflTeam);
     }
 
-    remove(id: string): void {
-        this.nflTeamsCollection.deleteSingle(id);
+    async remove(id: string): Promise<void> {
+        await this.nflTeamsCollection.deleteSingle(id);
     }
 }

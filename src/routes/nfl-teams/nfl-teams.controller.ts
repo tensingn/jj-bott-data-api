@@ -14,8 +14,10 @@ import { UpdateNFLTeamDto } from './dto/update-nfl-team.dto';
 import { NFLTeamModel } from '@tensingn/son-of-botker-models';
 import { STANDARD } from '@tensingn/firebary';
 import { BulkCreateNFLTeamsDto } from './dto/bulk-create-nfl-teams.dto';
+import { NFLTEAMS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
+import { BulkUpdateNFLTeamsDto } from './dto/bulk-update-nfl-teams.dto';
 
-@Controller('nfl-teams')
+@Controller(NFLTEAMS_COLLECTION_NAME)
 export class NFLTeamsController {
     constructor(private readonly nflTeamsService: NFLTeamsService) {}
 
@@ -24,22 +26,26 @@ export class NFLTeamsController {
         return this.nflTeamsService.create(nflTeam);
     }
 
-    @Post()
-    bulkCreate(@Body() body: BulkCreateNFLTeamsDto): void {
-        this.nflTeamsService.bulkCreate(body.nflTeams);
+    @Post('bulkCreate')
+    bulkCreate(@Body() body: BulkCreateNFLTeamsDto): Promise<void> {
+        return this.nflTeamsService.bulkCreate(body.nflTeams);
+    }
+
+    @Patch('bulkUpdate')
+    bulkUpdate(@Body() body: BulkUpdateNFLTeamsDto): Promise<void> {
+        return this.nflTeamsService.bulkUpdate(body.nflTeams);
     }
 
     @Get()
     findMany(
         @Query('startAfter') startAfter: string = null,
-        @Query('limit') limit: number = 10,
+        @Query('limit') limit: number,
     ): Promise<Array<NFLTeamModel>> {
         const query = STANDARD;
 
-        if (startAfter && limit > 0) {
-            query.pagingOptions.startAfter = startAfter;
-            query.pagingOptions.limit = limit;
-        }
+        if (startAfter) query.pagingOptions.startAfter = startAfter;
+
+        if (!isNaN(limit)) query.pagingOptions.limit = limit;
 
         return this.nflTeamsService.findMany(query);
     }
@@ -58,7 +64,7 @@ export class NFLTeamsController {
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string): void {
+    remove(@Param('id') id: string): Promise<void> {
         return this.nflTeamsService.remove(id);
     }
 }
