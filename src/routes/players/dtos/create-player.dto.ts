@@ -7,6 +7,7 @@ import {
     PositionNames,
     PositionNamesArray,
 } from '@tensingn/son-of-botker-models';
+import { SeasonStatsModel } from '@tensingn/son-of-botker-models/cjs/models/season-stats.model';
 import { IsDate, IsIn, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CreatePlayerDto {
@@ -33,13 +34,10 @@ export class CreatePlayerDto {
     positions: Array<PositionNames | 'NotSet'>;
 
     @IsNotEmpty()
-    @IsNumber()
-    @Min(1)
-    depthPosition: number;
-
-    @IsNotEmpty()
     @IsIn([...PlayerStatusNamesArray, 'NotSet'])
     status: PlayerStatusNames | 'NotSet';
 
     games: Array<PlayerGameModel>;
+
+    seasonStats: SeasonStatsModel;
 }
