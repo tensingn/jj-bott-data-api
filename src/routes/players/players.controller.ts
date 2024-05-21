@@ -14,8 +14,9 @@ import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { STANDARD } from '@tensingn/firebary';
 import { BulkCreatePlayersDto } from './dtos/bulk-create-players.dto';
+import { PLAYERS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
 
-@Controller('players')
+@Controller(PLAYERS_COLLECTION_NAME)
 export class PlayersController {
     constructor(private readonly playersService: PlayersService) {}
 

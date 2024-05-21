@@ -1,16 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    // TODO - uncomment this
-    // app.enableCors({
-    //     origin: process.env.WEB_URL,
-    //     credentials: true,
-    // });
+    app.use(json({ limit: '500kb' }));
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-    await app.listen(3000);
+    await app.listen(8080);
 }
 bootstrap();

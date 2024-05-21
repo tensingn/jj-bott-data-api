@@ -35,6 +35,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # shhhhh
-.npmrc
 .env
 key.json
