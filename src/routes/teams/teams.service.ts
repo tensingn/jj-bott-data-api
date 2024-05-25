@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TeamModel } from '@tensingn/son-of-botker-models';
+import { TeamModel } from '@tensingn/jj-bott-models';
 
 @Injectable()
 export class TeamsService {

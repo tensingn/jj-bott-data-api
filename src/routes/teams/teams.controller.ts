@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TeamsService } from './teams.service';
-import { TeamModel } from '@tensingn/son-of-botker-models';
+import { TeamModel } from '@tensingn/jj-bott-models';
 
 @Controller('teams')
 export class TeamsController {

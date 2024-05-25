@@ -4,7 +4,7 @@ import { UpdateNFLTeamDto } from './dto/update-nfl-team.dto';
 import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
 import { NFLTEAMS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
 import { Collection, QueryOptions, STANDARD } from '@tensingn/firebary';
-import { NFLTeamModel } from '@tensingn/son-of-botker-models';
+import { NFLTeamModel } from '@tensingn/jj-bott-models';
 
 @Injectable()
 export class NFLTeamsService {

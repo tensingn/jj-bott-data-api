@@ -1,7 +1,7 @@
 import {
     NFLTeamNames,
     NFLTeamNamesArray,
-} from '@tensingn/son-of-botker-models';
+} from '@tensingn/jj-bott-models';
 import { IsArray, IsIn, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateNFLTeamDto {

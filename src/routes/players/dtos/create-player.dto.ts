@@ -6,8 +6,8 @@ import {
     PlayerStatusNamesArray,
     PositionNames,
     PositionNamesArray,
-} from '@tensingn/son-of-botker-models';
-import { SeasonStatsModel } from '@tensingn/son-of-botker-models/cjs/models/season-stats.model';
+} from '@tensingn/jj-bott-models';
+import { SeasonStatsModel } from '@tensingn/jj-bott-models/cjs/models/season-stats.model';
 import { IsDate, IsIn, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CreatePlayerDto {

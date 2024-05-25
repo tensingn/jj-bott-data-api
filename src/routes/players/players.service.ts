@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Collection, QueryOptions, STANDARD } from '@tensingn/firebary';
-import { PlayerModel } from '@tensingn/son-of-botker-models';
+import { PlayerModel } from '@tensingn/jj-bott-models';
 import { PLAYERS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
 import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
 import { CreatePlayerDto } from './dtos/create-player.dto';

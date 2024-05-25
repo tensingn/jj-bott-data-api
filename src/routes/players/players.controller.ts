@@ -9,7 +9,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { PlayersService } from './players.service';
-import { PlayerModel } from '@tensingn/son-of-botker-models';
+import { PlayerModel } from '@tensingn/jj-bott-models';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { STANDARD } from '@tensingn/firebary';
