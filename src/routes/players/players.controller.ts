@@ -14,7 +14,13 @@ import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { STANDARD } from '@tensingn/firebary';
 import { BulkCreatePlayersDto } from './dtos/bulk-create-players.dto';
-import { PLAYERS_COLLECTION_NAME } from 'src/services/firebary/collection.names';
+import {
+    PLAYERGAMES_COLLECTION_NAME,
+    PLAYERS_COLLECTION_NAME,
+} from 'src/services/firebary/collection.names';
+import { CreatePlayerGameDto } from './dtos/create-player-game.dto';
+import { BulkCreatePlayerGamesDto } from './dtos/bulk-create-player-games.dto';
+import { SearchPlayerGamesDto } from './dtos/search-player-games.dto';
 
 @Controller(PLAYERS_COLLECTION_NAME)
 export class PlayersController {
@@ -36,11 +42,8 @@ export class PlayersController {
         @Query('limit') limit: number = 10,
     ): Promise<Array<PlayerModel>> {
         const query = STANDARD;
-
-        if (startAfter && limit > 0) {
-            query.pagingOptions.startAfter = startAfter;
-            query.pagingOptions.limit = limit;
-        }
+        query.pagingOptions.startAfter = startAfter ? startAfter : null;
+        query.pagingOptions.limit = limit;
 
         return this.playersService.findMany(query);
     }
@@ -61,5 +64,26 @@ export class PlayersController {
     @Delete(':id')
     remove(@Param('id') id: string): void {
         this.playersService.remove(id);
+    }
+
+    @Post(`:id/${PLAYERGAMES_COLLECTION_NAME}`)
+    createPlayerGames(
+        @Param('id') id: string,
+        @Body() playerGame: CreatePlayerGameDto,
+    ) {
+        return this.playersService.createPlayerGame(id, playerGame);
+    }
+
+    @Post(`:id/${PLAYERGAMES_COLLECTION_NAME}/bulkCreate`)
+    bulkCreatePlayerGames(
+        @Param('id') id: string,
+        @Body() body: BulkCreatePlayerGamesDto,
+    ) {
+        return this.playersService.bulkCreatePlayerGames(id, body.playerGames);
+    }
+
+    @Post(`${PLAYERGAMES_COLLECTION_NAME}/search`)
+    searchPlayerGames(@Body() body: SearchPlayerGamesDto) {
+        return this.playersService.searchPlayerGames(body);
     }
 }
