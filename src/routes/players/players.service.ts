@@ -11,6 +11,7 @@ import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { CreatePlayerGameDto } from './dtos/create-player-game.dto';
 import { NotFoundException } from 'src/exceptions/not-found.exception';
 import { SearchPlayerGamesDto } from './dtos/search-player-games.dto';
+import { SearchPlayersDto } from './dtos/search-players.dto';
 
 @Injectable()
 export class PlayersService {
@@ -80,13 +81,15 @@ export class PlayersService {
         return this.playerGamesCollection.addMany(playerGames);
     }
 
-    async searchPlayerGames(searchParameters: SearchPlayerGamesDto) {
+    async searchPlayerGames(
+        options: SearchPlayerGamesDto,
+    ): Promise<Array<PlayerGameModel>> {
         const NO_LIMIT_QUERY = STANDARD;
         NO_LIMIT_QUERY.pagingOptions.limit = 1000;
 
         const promises = new Array<Promise<Array<PlayerGameModel>>>();
 
-        searchParameters.nflTeams.forEach((nflTeam) => {
+        options.nflTeams.forEach((nflTeam) => {
             promises.push(
                 this.playerGamesCollection.getCollection({
                     whereOptions: {
@@ -103,7 +106,7 @@ export class PlayersService {
             );
         });
 
-        searchParameters.playerIDs.forEach((playerID) => {
+        options.playerIDs.forEach((playerID) => {
             promises.push(
                 this.playerGamesCollection.getCollection({
                     whereOptions: {
@@ -121,5 +124,28 @@ export class PlayersService {
         });
 
         return (await Promise.all(promises)).flat();
+    }
+
+    async searchPlayers(
+        options: SearchPlayersDto,
+    ): Promise<Array<PlayerModel>> {
+        const NO_LIMIT_QUERY = STANDARD;
+        NO_LIMIT_QUERY.pagingOptions.limit = options.limit;
+        NO_LIMIT_QUERY.pagingOptions.startAfter = options.startAfter
+            ? options.startAfter
+            : null;
+
+        return this.playersCollection.getCollection({
+            whereOptions: {
+                whereClauses: [
+                    {
+                        field: 'positions',
+                        operation: 'array-contains-any',
+                        value: options.positions,
+                    },
+                ],
+                pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+            },
+        });
     }
 }

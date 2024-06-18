@@ -9,7 +9,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { PlayersService } from './players.service';
-import { PlayerModel } from '@tensingn/jj-bott-models';
+import { PlayerGameModel, PlayerModel } from '@tensingn/jj-bott-models';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { STANDARD } from '@tensingn/firebary';
@@ -21,6 +21,7 @@ import {
 import { CreatePlayerGameDto } from './dtos/create-player-game.dto';
 import { BulkCreatePlayerGamesDto } from './dtos/bulk-create-player-games.dto';
 import { SearchPlayerGamesDto } from './dtos/search-player-games.dto';
+import { SearchPlayersDto } from './dtos/search-players.dto';
 
 @Controller(PLAYERS_COLLECTION_NAME)
 export class PlayersController {
@@ -83,7 +84,16 @@ export class PlayersController {
     }
 
     @Post(`${PLAYERGAMES_COLLECTION_NAME}/search`)
-    searchPlayerGames(@Body() body: SearchPlayerGamesDto) {
-        return this.playersService.searchPlayerGames(body);
+    searchPlayerGames(
+        @Body() options: SearchPlayerGamesDto,
+    ): Promise<Array<PlayerGameModel>> {
+        return this.playersService.searchPlayerGames(options);
+    }
+
+    @Post(`search`)
+    searchPlayers(
+        @Body() options: SearchPlayersDto,
+    ): Promise<Array<PlayerModel>> {
+        return this.playersService.searchPlayers(options);
     }
 }
