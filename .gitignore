@@ -37,3 +37,4 @@ lerna-debug.log*
 # shhhhh
 .env
 key.json
+gcp-docker-process.txt
