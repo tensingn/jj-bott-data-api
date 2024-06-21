@@ -12,6 +12,7 @@ import { CreatePlayerGameDto } from './dtos/create-player-game.dto';
 import { NotFoundException } from 'src/exceptions/not-found.exception';
 import { SearchPlayerGamesDto } from './dtos/search-player-games.dto';
 import { SearchPlayersDto } from './dtos/search-players.dto';
+import { UpdatePlayerGameDto } from './dtos/update-player-game.dto';
 
 @Injectable()
 export class PlayersService {
@@ -81,6 +82,28 @@ export class PlayersService {
         return this.playerGamesCollection.addMany(playerGames);
     }
 
+    async bulkUpdatePlayerGames(
+        playerGames: Array<UpdatePlayerGameDto>,
+    ): Promise<void> {
+        const promises = new Array<Promise<Object>>();
+
+        for (let i = 0; i < playerGames.length; i += 500) {
+            promises.push(
+                this.playerGamesCollection.updateMany(
+                    playerGames.slice(i, i + 499).map((playerGame) => {
+                        const { id, ...data } = playerGame;
+                        return {
+                            id,
+                            data,
+                        };
+                    }),
+                ),
+            );
+        }
+
+        await Promise.all(promises);
+    }
+
     async searchPlayerGames(
         options: SearchPlayerGamesDto,
     ): Promise<Array<PlayerGameModel>> {
@@ -99,6 +122,11 @@ export class PlayersService {
                                 operation: '==',
                                 value: nflTeam,
                             },
+                            {
+                                field: 'season',
+                                operation: 'in',
+                                value: options.seasons,
+                            },
                         ],
                         pagingOptions: NO_LIMIT_QUERY.pagingOptions,
                     },
@@ -115,6 +143,11 @@ export class PlayersService {
                                 field: 'playerID',
                                 operation: '==',
                                 value: playerID,
+                            },
+                            {
+                                field: 'season',
+                                operation: 'in',
+                                value: options.seasons,
                             },
                         ],
                         pagingOptions: NO_LIMIT_QUERY.pagingOptions,

@@ -22,6 +22,7 @@ import { CreatePlayerGameDto } from './dtos/create-player-game.dto';
 import { BulkCreatePlayerGamesDto } from './dtos/bulk-create-player-games.dto';
 import { SearchPlayerGamesDto } from './dtos/search-player-games.dto';
 import { SearchPlayersDto } from './dtos/search-players.dto';
+import { BulkUpdatePlayerGamesDto } from './dtos/bulk-update-player-games.dto';
 
 @Controller(PLAYERS_COLLECTION_NAME)
 export class PlayersController {
@@ -81,6 +82,11 @@ export class PlayersController {
         @Body() body: BulkCreatePlayerGamesDto,
     ) {
         return this.playersService.bulkCreatePlayerGames(id, body.playerGames);
+    }
+
+    @Patch(`${PLAYERGAMES_COLLECTION_NAME}/bulkUpdate`)
+    bulkUpdatePlayerGames(@Body() body: BulkUpdatePlayerGamesDto) {
+        return this.playersService.bulkUpdatePlayerGames(body.playerGames);
     }
 
     @Post(`${PLAYERGAMES_COLLECTION_NAME}/search`)

@@ -9,4 +9,8 @@ export class SearchPlayerGamesDto {
     @IsArray()
     @IsNumberString(null, { each: true })
     playerIDs: Array<string>;
+
+    @IsArray()
+    @IsNumberString(null, { each: true })
+    seasons: string;
 }
