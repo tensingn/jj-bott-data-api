@@ -1,25 +1,85 @@
-import { Injectable } from '@nestjs/common';
-import { TeamModel } from '@tensingn/jj-bott-models';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PlayerModel, TeamModel } from '@tensingn/jj-bott-models';
+import { CreateTeamDto } from './dtos/create-team.dto';
+import { Collection, STANDARD } from '@tensingn/firebary';
+import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
+import {
+    PLAYERS_COLLECTION_NAME,
+    TEAMS_COLLECTION_NAME,
+} from 'src/services/firebary/collection.names';
+import { AlreadyExistsException } from 'src/exceptions/already-exists.exception';
+import { NotFoundException } from 'src/exceptions/not-found.exception';
+import { UpdateTeamDto } from './dtos/update-team.dto';
 
 @Injectable()
 export class TeamsService {
-  create(team: TeamModel) {
-    return 'This action adds a new team';
-  }
+    constructor(
+        @InjectCollectionByCollectionName(TEAMS_COLLECTION_NAME)
+        private teamsCollection: Collection,
+        @InjectCollectionByCollectionName(PLAYERS_COLLECTION_NAME)
+        private playersCollection: Collection,
+    ) {}
 
-  findAll() {
-    return `This action returns all teams`;
-  }
+    async create(team: CreateTeamDto): Promise<TeamModel> {
+        if (!(await this.validateTeam(team)))
+            throw new BadRequestException('Invalid team');
 
-  findOne(id: string) {
-    return `This action returns a #${id} team`;
-  }
+        return this.teamsCollection.addSingle(team as TeamModel);
+    }
 
-  update(id: string, team: TeamModel) {
-    return `This action updates a #${id} team`;
-  }
+    async bulkCreate(teams: Array<CreateTeamDto>) {
+        const teamValidations = await Promise.all([
+            ...teams.map((team) => this.validateTeam(team)),
+        ]);
+        if (teamValidations.includes(false))
+            throw new BadRequestException('Invalid team');
+        return this.teamsCollection.addMany(teams);
+    }
 
-  remove(id: string) {
-    return `This action removes a #${id} team`;
-  }
+    findAll(season: string): Promise<Array<TeamModel>> {
+        return this.teamsCollection.getCollection({
+            whereOptions: {
+                pagingOptions: STANDARD.pagingOptions,
+                whereClauses: [
+                    {
+                        field: 'seasonID',
+                        operation: '==',
+                        value: season,
+                    },
+                ],
+            },
+        });
+    }
+
+    findOne(id: string): Promise<TeamModel> {
+        return this.teamsCollection.getSingle(id);
+    }
+
+    update(id: string, team: UpdateTeamDto) {
+        return this.teamsCollection.updateSingle(id, team);
+    }
+
+    remove(id: string) {
+        return this.teamsCollection.deleteSingle(id);
+    }
+
+    private async validateTeam(dto: CreateTeamDto): Promise<boolean> {
+        const foundPlayers = await this.playersCollection.getCollection({
+            whereOptions: {
+                pagingOptions: {
+                    limit: dto.playerIDs.length,
+                    startAfter: null,
+                },
+                whereClauses: [
+                    { field: 'id', operation: 'in', value: dto.playerIDs },
+                ],
+            },
+        });
+
+        if (foundPlayers.length !== dto.playerIDs.length) {
+            return false;
+        }
+
+        return true;
+    }
 }

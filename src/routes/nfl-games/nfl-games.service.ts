@@ -22,7 +22,7 @@ export class NFLGamesService {
 
         for (let i = 0; i < nflGames.length; i += 500) {
             promises.push(
-                this.nflGamesCollection.addMany(nflGames.slice(i, i + 499)),
+                this.nflGamesCollection.addMany(nflGames.slice(i, i + 500)),
             );
         }
 

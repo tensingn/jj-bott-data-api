@@ -1,5 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Collection, QueryOptions, STANDARD } from '@tensingn/firebary';
+import {
+    Collection,
+    QueryOptions,
+    STANDARD,
+    WhereClause,
+} from '@tensingn/firebary';
 import { PlayerGameModel, PlayerModel } from '@tensingn/jj-bott-models';
 import {
     PLAYERGAMES_COLLECTION_NAME,
@@ -90,7 +95,7 @@ export class PlayersService {
         for (let i = 0; i < playerGames.length; i += 500) {
             promises.push(
                 this.playerGamesCollection.updateMany(
-                    playerGames.slice(i, i + 499).map((playerGame) => {
+                    playerGames.slice(i, i + 500).map((playerGame) => {
                         const { id, ...data } = playerGame;
                         return {
                             id,
@@ -113,21 +118,24 @@ export class PlayersService {
         const promises = new Array<Promise<Array<PlayerGameModel>>>();
 
         options.nflTeams.forEach((nflTeam) => {
+            const whereClauses: Array<WhereClause> = [
+                {
+                    field: 'playerID',
+                    operation: '==',
+                    value: nflTeam,
+                },
+            ];
+            if (options.seasons.length) {
+                whereClauses.push({
+                    field: 'season',
+                    operation: 'in',
+                    value: options.seasons,
+                });
+            }
             promises.push(
                 this.playerGamesCollection.getCollection({
                     whereOptions: {
-                        whereClauses: [
-                            {
-                                field: 'playerID',
-                                operation: '==',
-                                value: nflTeam,
-                            },
-                            {
-                                field: 'season',
-                                operation: 'in',
-                                value: options.seasons,
-                            },
-                        ],
+                        whereClauses,
                         pagingOptions: NO_LIMIT_QUERY.pagingOptions,
                     },
                 }),
@@ -135,21 +143,24 @@ export class PlayersService {
         });
 
         options.playerIDs.forEach((playerID) => {
+            const whereClauses: Array<WhereClause> = [
+                {
+                    field: 'playerID',
+                    operation: '==',
+                    value: playerID,
+                },
+            ];
+            if (options.seasons.length) {
+                whereClauses.push({
+                    field: 'season',
+                    operation: 'in',
+                    value: options.seasons,
+                });
+            }
             promises.push(
                 this.playerGamesCollection.getCollection({
                     whereOptions: {
-                        whereClauses: [
-                            {
-                                field: 'playerID',
-                                operation: '==',
-                                value: playerID,
-                            },
-                            {
-                                field: 'season',
-                                operation: 'in',
-                                value: options.seasons,
-                            },
-                        ],
+                        whereClauses,
                         pagingOptions: NO_LIMIT_QUERY.pagingOptions,
                     },
                 }),
