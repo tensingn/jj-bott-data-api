@@ -117,46 +117,30 @@ export class PlayersService {
 
         const promises = new Array<Promise<Array<PlayerGameModel>>>();
 
-        options.nflTeams.forEach((nflTeam) => {
-            const whereClauses: Array<WhereClause> = [
-                {
-                    field: 'playerID',
-                    operation: '==',
-                    value: nflTeam,
-                },
-            ];
-            if (options.seasons.length) {
-                whereClauses.push({
-                    field: 'season',
-                    operation: 'in',
-                    value: options.seasons,
-                });
-            }
-            promises.push(
-                this.playerGamesCollection.getCollection({
-                    whereOptions: {
-                        whereClauses,
-                        pagingOptions: NO_LIMIT_QUERY.pagingOptions,
-                    },
-                }),
+        if (options.weeks.length && !options.seasons.length) {
+            throw new Error(
+                'cannot search player games by week without season',
             );
-        });
+        }
+        if (options.weeks.length && options.seasons.length) {
+            if (options.playerIDs.length || options.nflTeams.length) {
+                throw new Error(
+                    'if searching by week and season, cannot also search by playerID or nflTeam',
+                );
+            }
 
-        options.playerIDs.forEach((playerID) => {
-            const whereClauses: Array<WhereClause> = [
+            const whereClauses: Array<WhereClause<any>> = [
                 {
-                    field: 'playerID',
-                    operation: '==',
-                    value: playerID,
-                },
-            ];
-            if (options.seasons.length) {
-                whereClauses.push({
                     field: 'season',
                     operation: 'in',
                     value: options.seasons,
-                });
-            }
+                },
+                {
+                    field: 'week',
+                    operation: 'in',
+                    value: options.weeks,
+                },
+            ];
             promises.push(
                 this.playerGamesCollection.getCollection({
                     whereOptions: {
@@ -165,7 +149,57 @@ export class PlayersService {
                     },
                 }),
             );
-        });
+        } else {
+            options.nflTeams.forEach((nflTeam) => {
+                const whereClauses: Array<WhereClause<any>> = [
+                    {
+                        field: 'playerID',
+                        operation: '==',
+                        value: nflTeam,
+                    },
+                ];
+                if (options.seasons.length) {
+                    whereClauses.push({
+                        field: 'season',
+                        operation: 'in',
+                        value: options.seasons,
+                    });
+                }
+                promises.push(
+                    this.playerGamesCollection.getCollection({
+                        whereOptions: {
+                            whereClauses,
+                            pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+                        },
+                    }),
+                );
+            });
+
+            options.playerIDs.forEach((playerID) => {
+                const whereClauses: Array<WhereClause<any>> = [
+                    {
+                        field: 'playerID',
+                        operation: '==',
+                        value: playerID,
+                    },
+                ];
+                if (options.seasons.length) {
+                    whereClauses.push({
+                        field: 'season',
+                        operation: 'in',
+                        value: options.seasons,
+                    });
+                }
+                promises.push(
+                    this.playerGamesCollection.getCollection({
+                        whereOptions: {
+                            whereClauses,
+                            pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+                        },
+                    }),
+                );
+            });
+        }
 
         return (await Promise.all(promises)).flat();
     }

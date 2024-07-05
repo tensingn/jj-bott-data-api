@@ -15,6 +15,7 @@ import { NFLGAMES_COLLECTION_NAME } from 'src/services/firebary/collection.names
 import { NFLGameModel } from '@tensingn/jj-bott-models';
 import { STANDARD } from '@tensingn/firebary';
 import { BulkCreateNFLGamesDto } from './dto/bulk-create-nfl-games.dto';
+import { SearchNFLGamesDto } from './dto/search-nfl-games.dto';
 
 @Controller(NFLGAMES_COLLECTION_NAME)
 export class NFLGamesController {
@@ -58,5 +59,10 @@ export class NFLGamesController {
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.NFLGamesService.remove(id);
+    }
+
+    @Post('search')
+    searchNFLGames(@Body() options: SearchNFLGamesDto) {
+        return this.NFLGamesService.searchNFLGames(options);
     }
 }

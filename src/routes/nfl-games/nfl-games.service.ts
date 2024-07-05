@@ -4,7 +4,13 @@ import { UpdateNFLGameDto } from './dto/update-nfl-game.dto';
 import { NFLGameModel } from '@tensingn/jj-bott-models';
 import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
 import { NFLGAMES_COLLECTION_NAME } from 'src/services/firebary/collection.names';
-import { Collection, QueryOptions, STANDARD } from '@tensingn/firebary';
+import {
+    Collection,
+    QueryOptions,
+    STANDARD,
+    WhereClause,
+} from '@tensingn/firebary';
+import { SearchNFLGamesDto } from './dto/search-nfl-games.dto';
 
 @Injectable()
 export class NFLGamesService {
@@ -43,5 +49,34 @@ export class NFLGamesService {
 
     async remove(id: string): Promise<void> {
         await this.nflGamesCollection.deleteSingle(id);
+    }
+
+    searchNFLGames(options: SearchNFLGamesDto): Promise<Array<NFLGameModel>> {
+        const NO_LIMIT_QUERY = STANDARD;
+        NO_LIMIT_QUERY.pagingOptions.limit = 1000;
+
+        const whereClauses = Array<WhereClause<any>>();
+        if (options.seasons.length) {
+            whereClauses.push({
+                field: 'season',
+                operation: 'in',
+                value: options.seasons,
+            });
+        }
+
+        if (options.weeks.length) {
+            whereClauses.push({
+                field: 'week',
+                operation: 'in',
+                value: options.weeks,
+            });
+        }
+
+        return this.nflGamesCollection.getCollection({
+            whereOptions: {
+                whereClauses,
+                pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+            },
+        });
     }
 }

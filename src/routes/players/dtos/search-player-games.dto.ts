@@ -1,5 +1,5 @@
 import { NFLTeamNames, NFLTeamNamesArray } from '@tensingn/jj-bott-models';
-import { IsArray, IsIn, IsNumberString } from 'class-validator';
+import { IsArray, IsIn, IsNumber, IsNumberString } from 'class-validator';
 
 export class SearchPlayerGamesDto {
     @IsArray()
@@ -12,5 +12,9 @@ export class SearchPlayerGamesDto {
 
     @IsArray()
     @IsNumberString(null, { each: true })
-    seasons: string;
+    seasons: Array<string>;
+
+    @IsArray()
+    @IsNumberString(null, { each: true })
+    weeks: Array<number>;
 }
