@@ -32,8 +32,13 @@ export class MatchupsController {
     findMatchupsForWeekOfSeason(
         @Query('season') season: string,
         @Query('week') week: string,
+        @Query('includePlayers') includePlayers: boolean,
     ): Promise<Array<MatchupModel>> {
-        return this.matchupsService.findMatchupsForWeekOfSeason(season, week);
+        return this.matchupsService.findMatchupsForWeekOfSeason(
+            season,
+            week,
+            includePlayers,
+        );
     }
 
     @Get(':id')

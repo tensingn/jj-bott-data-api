@@ -29,13 +29,19 @@ export class TeamsController {
     }
 
     @Get()
-    findAll(@Query('season') season: string) {
-        return this.teamsService.findAll(season);
+    findAll(
+        @Query('season') season: string,
+        @Query('includePlayers') includePlayers: boolean,
+    ) {
+        return this.teamsService.findAll(season, includePlayers);
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.teamsService.findOne(id);
+    findOne(
+        @Param('id') id: string,
+        @Query('includePlayers') includePlayers: boolean,
+    ) {
+        return this.teamsService.findOne(id, includePlayers);
     }
 
     @Patch(':id')

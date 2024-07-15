@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PlayerModel, TeamModel } from '@tensingn/jj-bott-models';
+import { TeamModel } from '@tensingn/jj-bott-models';
 import { CreateTeamDto } from './dtos/create-team.dto';
 import { Collection, STANDARD } from '@tensingn/firebary';
 import { InjectCollectionByCollectionName } from 'src/services/firebary/firebary.decorators';
@@ -7,9 +7,9 @@ import {
     PLAYERS_COLLECTION_NAME,
     TEAMS_COLLECTION_NAME,
 } from 'src/services/firebary/collection.names';
-import { AlreadyExistsException } from 'src/exceptions/already-exists.exception';
-import { NotFoundException } from 'src/exceptions/not-found.exception';
 import { UpdateTeamDto } from './dtos/update-team.dto';
+import { NotFoundException } from 'src/exceptions/not-found.exception';
+import { FieldPath } from '@google-cloud/firestore';
 
 @Injectable()
 export class TeamsService {
@@ -36,8 +36,15 @@ export class TeamsService {
         return this.teamsCollection.addMany(teams);
     }
 
-    findAll(season: string): Promise<Array<TeamModel>> {
-        return this.teamsCollection.getCollection({
+    async findAll(
+        season: string,
+        includePlayers: boolean,
+    ): Promise<Array<TeamModel>> {
+        if (!season || isNaN(parseInt(season))) {
+            throw new BadRequestException('invalid season');
+        }
+
+        const teams = await this.teamsCollection.getCollection<TeamModel>({
             whereOptions: {
                 pagingOptions: STANDARD.pagingOptions,
                 whereClauses: [
@@ -49,10 +56,71 @@ export class TeamsService {
                 ],
             },
         });
+
+        if (includePlayers) {
+            await Promise.all(
+                teams.map(async (team, index, arr) => {
+                    arr[index].players =
+                        await this.playersCollection.getCollection({
+                            whereOptions: {
+                                pagingOptions: {
+                                    limit: team.playerIDs.length,
+                                    startAfter: null,
+                                },
+                                whereClauses: [
+                                    {
+                                        field: FieldPath.documentId(),
+                                        operation: 'in',
+                                        value: team.playerIDs,
+                                    },
+                                ],
+                            },
+                        });
+                    if (arr[index].players.length !== team.playerIDs.length) {
+                        console.log(
+                            `Team ${team.teamName} missing ${team.playerIDs
+                                .filter(
+                                    (pid) =>
+                                        !arr[index].players.find(
+                                            (p) => p.id === pid,
+                                        ),
+                                )
+                                ?.join(',')}`,
+                        );
+                    }
+                }),
+            );
+        }
+
+        return teams;
     }
 
-    findOne(id: string): Promise<TeamModel> {
-        return this.teamsCollection.getSingle(id);
+    async findOne(id: string, includePlayers: boolean): Promise<TeamModel> {
+        const team = await this.teamsCollection.getSingle<TeamModel>(id);
+
+        if (!team) {
+            throw new NotFoundException(TeamModel);
+        }
+
+        if (includePlayers) {
+            team.players = await this.playersCollection.getCollection({
+                whereOptions: {
+                    pagingOptions: {
+                        limit: team.playerIDs.length,
+                        startAfter: null,
+                    },
+                    whereClauses: [
+                        {
+                            field: FieldPath.documentId(),
+                            operation: 'in',
+                            value: team.playerIDs,
+                        },
+                    ],
+                },
+            });
+        }
+
+        return team;
     }
 
     update(id: string, team: UpdateTeamDto) {
@@ -71,7 +139,11 @@ export class TeamsService {
                     startAfter: null,
                 },
                 whereClauses: [
-                    { field: 'id', operation: 'in', value: dto.playerIDs },
+                    {
+                        field: FieldPath.documentId(),
+                        operation: 'in',
+                        value: dto.playerIDs,
+                    },
                 ],
             },
         });
