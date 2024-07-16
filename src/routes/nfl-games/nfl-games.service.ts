@@ -51,32 +51,70 @@ export class NFLGamesService {
         await this.nflGamesCollection.deleteSingle(id);
     }
 
-    searchNFLGames(options: SearchNFLGamesDto): Promise<Array<NFLGameModel>> {
+    async searchNFLGames(
+        options: SearchNFLGamesDto,
+    ): Promise<Array<NFLGameModel>> {
         const NO_LIMIT_QUERY = STANDARD;
         NO_LIMIT_QUERY.pagingOptions.limit = 1000;
 
         const whereClauses = Array<WhereClause<any>>();
-        if (options.seasons.length) {
+        if (options.teams.length) {
             whereClauses.push({
-                field: 'season',
+                field: 'homeTeamName',
                 operation: 'in',
-                value: options.seasons,
+                value: options.teams,
+            });
+            whereClauses.push({
+                field: 'awayTeamName',
+                operation: 'in',
+                value: options.teams,
+            });
+
+            const nflGames =
+                await this.nflGamesCollection.getCollection<NFLGameModel>({
+                    whereOptions: {
+                        whereClauses,
+                        pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+                        operator: 'or',
+                    },
+                });
+
+            if (options.seasons.length && options.weeks.length) {
+                return nflGames.filter(
+                    (g) =>
+                        options.seasons.includes(g.season) &&
+                        options.weeks.includes(g.week),
+                );
+            } else if (options.seasons.length) {
+                return nflGames.filter((g) =>
+                    options.seasons.includes(g.season),
+                );
+            } else {
+                return nflGames;
+            }
+        } else {
+            if (options.seasons.length) {
+                whereClauses.push({
+                    field: 'season',
+                    operation: 'in',
+                    value: options.seasons,
+                });
+            }
+
+            if (options.weeks.length) {
+                whereClauses.push({
+                    field: 'week',
+                    operation: 'in',
+                    value: options.weeks,
+                });
+            }
+
+            return this.nflGamesCollection.getCollection({
+                whereOptions: {
+                    whereClauses,
+                    pagingOptions: NO_LIMIT_QUERY.pagingOptions,
+                },
             });
         }
-
-        if (options.weeks.length) {
-            whereClauses.push({
-                field: 'week',
-                operation: 'in',
-                value: options.weeks,
-            });
-        }
-
-        return this.nflGamesCollection.getCollection({
-            whereOptions: {
-                whereClauses,
-                pagingOptions: NO_LIMIT_QUERY.pagingOptions,
-            },
-        });
     }
 }
